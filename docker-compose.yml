@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:18.1-alpine3.22
+    pull_policy: never
+    env_file:
+      - .env_db
+    environment:
+      POSTGRES_PASSWORD: ${db_password?Set password!}
+      POSTGRES_USER: ${db_user?Set username!}
+      POSTGRES_DB: ${db_name}
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    shm_size: 256mb
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${db_user}" ]
+      interval: 30s
+      timeout: 15s
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+    networks:
+      - internalNetwork
+
+  redis:
+    image: redis:8.4.0-alpine
+    pull_policy: never
+    ports:
+      - "6379:6379"
+    networks:
+      - internalNetwork
+    restart: unless-stopped
+    depends_on:
+      - database
+    volumes:
+      - ./redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:4.2.2-management-alpine
+    pull_policy: never
+    hostname: rabbitmq
+    depends_on:
+      - database
+    env_file:
+      - .env_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${rabbitmq_user:-admin}
+      RABBITMQ_DEFAULT_PASS: ${rabbitmq_default_pass?Password required!}
+      RABBITMQ_DEFAULT_VHOST: ${rabbit_mq_vhost:-/}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - internalNetwork
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+
+
+networks:
+  internalNetwork:
+    driver: bridge
