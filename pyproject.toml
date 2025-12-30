@@ -5,6 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "aio-pika>=9.5.8",
+    "alembic>=1.17.2",
+    "asyncpg>=0.31.0",
+    "celery>=5.6.1",
     "fastapi[all]>=0.128.0",
+    "redis[async,asyncio]>=7.1.0",
     "sqlalchemy[asyncio]>=2.0.45",
 ]
