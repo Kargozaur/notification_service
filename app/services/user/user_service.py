@@ -1,5 +1,5 @@
-from token_service import ITokenService
-from user_repo import IUserRepositroy
+from .token_service import ITokenService
+from .user_repo import IUserRepositroy
 from models.models import User
 from schemas.schemas import CreateUser, LoginUser
 from core.errors import UserAlreadyExists, UserNotFound

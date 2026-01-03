@@ -3,6 +3,8 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from core.errors import DomainError
+from lifespan import lifespan
+from router import user_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -11,7 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("app")
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 @app.exception_handler(DomainError)
@@ -35,6 +37,9 @@ async def base_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500, content={"detail": "Internal server error"}
     )
+
+
+app.include_router(user_router.router)
 
 
 @app.get("/")

@@ -41,19 +41,23 @@ class OwnedByMixin:
     def user(cls) -> Mapped["User | None"]:  # noqa: F821  # ty:ignore[unresolved-reference]
         return relationship(
             "User",
-            back_populates=f"{cls.__tablename__}s",  # ty:ignore[unresolved-attribute]
+            back_populates=f"{cls.__tablename__}",  # ty:ignore[unresolved-attribute]
         )
 
 
 class CreatedAtMixin:
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True)
+        TIMESTAMP(timezone=True),
+        server_default=text("now()"),
+        default=datetime.now(),
     )
 
 
 class UpdatedAtMixin:
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True)
+        TIMESTAMP(timezone=True),
+        server_default=text("now()"),
+        default=datetime.now(),
     )
 
 

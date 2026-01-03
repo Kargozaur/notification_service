@@ -15,7 +15,7 @@ class IPasswordHasher(ABC):
         pass
 
 
-class PasswordHasher:
+class PasswordHasher(IPasswordHasher):
     def hash_password(self, user_password: str) -> str:
         sha = hashlib.sha256(user_password.encode()).digest()
         return bcrypt.hashpw(sha, bcrypt.gensalt()).decode()

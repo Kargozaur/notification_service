@@ -36,7 +36,7 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     phone: Mapped[str] = mapped_column(
-        String(15),
+        String(30),
     )
     username: Mapped[str] = mapped_column(String(32), unique=True)
 
@@ -45,7 +45,7 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    delivery_logs = relationship(
+    notification_delivery_logs = relationship(
         "NotificationDeliveryLog",
         back_populates="user",
         cascade="all, delete-orphan",
@@ -55,21 +55,6 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
-
-    @validates("phone")
-    def validate_phone(self, number: str) -> str:
-        if not number:
-            raise ValueError("You need to provide your phone number")
-        cleared: str = "".join(number.split())
-        pattern = r"^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$"
-        if not re.match(pattern, cleared):
-            raise ValueError(
-                "Phone number is not valid. Examples of valid formats: \n  +1 (234) 567-8901\n"
-                "  1234567890\n"
-                "  +44 20 1234 5678\n"
-                "  123-456-7890"
-            )
-        return number
 
 
 class NotificationPreference(
