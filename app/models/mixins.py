@@ -38,9 +38,10 @@ class OwnedByMixin:
         )
 
     @declared_attr
-    def user(cls) -> Mapped["User | None"]:
+    def user(cls) -> Mapped["User | None"]:  # noqa: F821  # ty:ignore[unresolved-reference]
         return relationship(
-            "User", back_populates=f"{cls.__tablename__}s"
+            "User",
+            back_populates=f"{cls.__tablename__}s",  # ty:ignore[unresolved-attribute]
         )
 
 
