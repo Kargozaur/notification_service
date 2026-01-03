@@ -5,7 +5,10 @@ from core.settings import settings
 SQL_ALCHEMY_URL = settings.DATABASE_URL
 
 engine = create_async_engine(
-    url=SQL_ALCHEMY_URL, max_overflow=10, future=True
+    url=SQL_ALCHEMY_URL,
+    max_overflow=10,
+    future=True,
+    connect_args={"server_settings": {"client_encoding": "utf8"}},
 )
 
 AsyncSessionLocal = sessionmaker(

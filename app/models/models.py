@@ -1,11 +1,10 @@
-from sqlalchemy.orm import DeclarativeBase, validates
+from sqlalchemy.orm import DeclarativeBase
 from . import (
     Mapped,
     mapped_column,
     TIME,
     JSONB,
     declared_attr,
-    re,
     camel_to_snake,
     text,
     String,
