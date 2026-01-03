@@ -37,7 +37,7 @@ class UserService:
         new_user: User = await self.user.add_user(user)
         return new_user
 
-    async def login_suer(self, user_credential: LoginUser):
+    async def login_user(self, user_credential: LoginUser):
         user: User | None = await self.user._get_user_by_email(
             user_credential.email
         )
