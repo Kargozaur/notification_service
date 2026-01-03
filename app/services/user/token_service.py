@@ -27,6 +27,6 @@ class TokenService(ITokenService):
         ecndoed: str = jwt.encode(
             claims=to_encode,
             key=self.secret_key,
-            algorithm=[self.algorithm],
+            algorithm=self.algorithm,
         )
         return ecndoed
