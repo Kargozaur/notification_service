@@ -19,7 +19,7 @@ from .mixins import (
     CreatedAtMixin,
     UpdatedAtMixin,
     OwnedByMixin,
-    NotificationPreferenceMixin,
+    NotificationPreferanceMixin,
     QueuedMixin,
     ChannelTypeMixin,
 )
@@ -39,8 +39,8 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
     )
     username: Mapped[str] = mapped_column(String(32), unique=True)
 
-    notification_preferences = relationship(
-        "NotificationPreference",
+    notification_preferances = relationship(
+        "NotificationPreferance",
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -56,14 +56,16 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
     )
 
 
-class NotificationPreference(
-    UUIDPKMixin, OwnedByMixin, NotificationPreferenceMixin, Base
+class NotificationPreferance(
+    UUIDPKMixin, OwnedByMixin, NotificationPreferanceMixin, Base
 ):
     preferred_channed: Mapped[str] = mapped_column(String(30))
     quiet_hours_start: Mapped[time] = mapped_column(
-        TIME(timezone=True)
+        TIME(timezone=True), default=time(hour=23, minute=0, second=0)
     )
-    quiet_hours_end: Mapped[time] = mapped_column(TIME(timezone=True))
+    quiet_hours_end: Mapped[time] = mapped_column(
+        TIME(timezone=True), default=time(hour=7, minute=30, second=0)
+    )
 
     channel_specific_settings: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default=dict, server_default="{}"

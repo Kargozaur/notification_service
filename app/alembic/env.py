@@ -12,7 +12,7 @@ from models.models import (
     User,
     NotificationChannel,
     NotificationDeliveryLog,
-    NotificationPreference,
+    NotificationPreferance,
     ChannelConfig,
 )
 

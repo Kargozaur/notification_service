@@ -61,9 +61,9 @@ class UpdatedAtMixin:
     )
 
 
-class NotificationPreferenceMixin:
-    """Preferences for the notifications,
-    All preferences are disabled by default
+class NotificationPreferanceMixin:
+    """Preferencas for the notifications,
+    All preferencas are disabled by default
     """
 
     email_enabled: Mapped[bool] = mapped_column(
