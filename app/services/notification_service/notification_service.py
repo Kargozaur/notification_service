@@ -1,5 +1,5 @@
 from redis.asyncio import Redis
-import uuid
+from . import UUID
 from . import INotificationRepo
 from . import (
     NotificationPreferanceCreate,
@@ -7,7 +7,7 @@ from . import (
     UpdateNotificationPref,
     NotificationsEnum,
 )
-from core.errors import PreferanceDoesNotExists
+from core.errors import PreferanceDoesNotExists, ChannelDisabledError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class NotificationService:
         self.redis = redis
 
     async def _get_from_cached_helper(
-        self, user_id: uuid.UUID
+        self, user_id: UUID
     ) -> NotificationPreferanceRead | None:
         """Helper method to extract data from cache if exists. Returns None if nothing found"""
         cached_key = f"notificaion:prefs:{user_id.hex}"
@@ -40,7 +40,7 @@ class NotificationService:
             logger.warning(f"Redis unavailable {e}", exc_info=True)
         return None
 
-    async def _invalidate_cache(self, user_id: uuid.UUID) -> None:
+    async def _invalidate_cache(self, user_id: UUID) -> None:
         cache_key = f"notification:prefs:{user_id.hex}"
         try:
             await self.redis.delete(cache_key)
@@ -49,7 +49,7 @@ class NotificationService:
             logger.warning("Cache invalidation failed", exc_info=exc)
 
     async def create_or_get_preferance(
-        self, user_id: uuid.UUID
+        self, user_id: UUID
     ) -> NotificationPreferanceRead:
         """Tries to get preferance from cache, if not found, performs lookup in db.
         If none found - raises exception and proceeds to creation of a new preferance."""
@@ -85,7 +85,7 @@ class NotificationService:
         return read_model
 
     async def update_preferance(
-        self, user_id: uuid.UUID, user_data: UpdateNotificationPref
+        self, user_id: UUID, user_data: UpdateNotificationPref
     ) -> NotificationPreferanceRead:
         """Tries to update data. If nothing to update tries to look up in cache.
         If nothing found in cache, looksup in DB.
@@ -100,3 +100,34 @@ class NotificationService:
         )
         await self._invalidate_cache(user_id)
         return result
+
+    async def notify(
+        self,
+        user_id: UUID,
+        title: str,
+        body: str,
+        channel: str | None = None,
+    ) -> dict:
+        pref: NotificationPreferanceRead = (
+            await self.create_or_get_preferance(user_id)
+        )
+        """Resolver for channel. If channel is None, set default from preferred channel"""
+        channel_to_use: str = channel or pref.preferred_channel.value
+        """Checks if channel is enabled. Raises if not"""
+        match channel_to_use:
+            case "email":
+                enabled = pref.email_enabled
+            case "telegram":
+                enabled = pref.telegram_enabled
+            case "web-push":
+                enabled = pref.push_enabled
+            case _:
+                enabled = False
+
+        if enabled is False:
+            raise ChannelDisabledError
+
+        logging.info(
+            f"Notification queued for user{user_id} via {channel_to_use}: title={title}"
+        )
+        return {"status": "queued", "channel": channel_to_use}

@@ -1,6 +1,6 @@
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
+from . import UUID
 from . import INotificationRepo
 from schemas.schemas import (
     NotificationPreferanceCreate,
@@ -14,7 +14,7 @@ class NotificationRepo(INotificationRepo):
     def __init__(self, db: AsyncSession) -> None:
         self._db_session = db
 
-    def _get_preferance_query(self, user_id: uuid.UUID):
+    def _get_preferance_query(self, user_id: UUID):
         return select(NotificationPreferance).where(
             NotificationPreferance.user_id == user_id
         )
@@ -33,7 +33,7 @@ class NotificationRepo(INotificationRepo):
 
     async def create_preferance(
         self,
-        user_id: uuid.UUID,
+        user_id: UUID,
         preferances: NotificationPreferanceCreate,
     ) -> NotificationPreferanceRead:
         """
@@ -60,14 +60,14 @@ class NotificationRepo(INotificationRepo):
             )
 
     async def get_preferance(
-        self, user_id: uuid.UUID
+        self, user_id: UUID
     ) -> NotificationPreferanceRead:
         """Tries to get user preferance. Raises if not found"""
         result = await self._get_current_or_raise(user_id)
         return NotificationPreferanceRead.model_validate(result)
 
     async def update_preferance(
-        self, user_id: uuid.UUID, updated_pref: dict
+        self, user_id: UUID, updated_pref: dict
     ) -> NotificationPreferanceRead:
         """Checks if user provided data to update. If not tries to return current. Raises if not found
         If user provided data, but preferance is not found raises.
