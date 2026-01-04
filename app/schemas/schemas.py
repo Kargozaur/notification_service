@@ -1,6 +1,13 @@
+from datetime import time, timezone
 from pydantic_extra_types.phone_numbers import PhoneNumber
-from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Annotated
+from pydantic import (
+    BaseModel,
+    EmailStr,
+    Field,
+    field_validator,
+    ConfigDict,
+)
+from typing import Annotated, Optional
 from utility.validate_fields import (
     validate_email_no_emoji,
     validate_password_allow_unicode_but_no_emoji,
@@ -9,6 +16,13 @@ from utility.validate_fields import (
 )
 import uuid
 import re
+from enum import StrEnum
+
+
+class NotificationsEnum(StrEnum):
+    telegram = "telegram"
+    email = "email"
+    web_push = "web-push"
 
 
 class CreateUser(BaseModel):
@@ -60,6 +74,43 @@ class CreateUser(BaseModel):
 class LoginUser(BaseModel):
     email: str
     password: str
+
+
+class NotificationPreferanceCreate(BaseModel):
+    preferred_channel: NotificationsEnum
+    quiet_hours_start: Optional[time] = time(
+        hour=23, minute=0, second=0, tzinfo=timezone.utc
+    )
+    quiet_hours_end: Optional[time] = time(
+        hour=7, minute=30, second=0, tzinfo=timezone.utc
+    )
+    channel_specific_settings: dict = Field(..., default_factory=dict)
+    email_enabled: Optional[bool] = True
+    push_enabled: Optional[bool] = True
+    telegram_enabled: Optional[bool] = True
+
+
+class UpdateNotificationPref(BaseModel):
+    preffered_channel: Optional[NotificationsEnum] = None
+    quite_hours_start: Optional[time] = None
+    quite_hours_end: Optional[time] = None
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+    telegram_enabled: Optional[bool] = None
+
+
+class NotificationPreferanceRead(BaseModel):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    preferred_channel: NotificationsEnum
+    quiet_hours_start: time
+    quiet_hours_end: time
+    channel_specific_settings: dict
+    email_enabled: bool
+    push_enabled: bool
+    telegram_enabled: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenPayload(BaseModel):

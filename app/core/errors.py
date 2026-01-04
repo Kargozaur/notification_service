@@ -21,3 +21,10 @@ class UserAlreadyExists(DomainError):
 class UserNotFound(DomainError):
     message: str = "User with this credentials is not found"
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class PreferanceDoesNotExists(DomainError):
+    message: str = (
+        "Preferances for this user doesn't exist, please create them"
+    )
+    status_code = status.HTTP_404_NOT_FOUND

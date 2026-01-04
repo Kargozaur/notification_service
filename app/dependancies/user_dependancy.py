@@ -1,11 +1,11 @@
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from . import Depends
+from . import AsyncSession
 from . import TokenService
 from . import UserRepository
 from . import UserService
 from . import PasswordHasher
 from core.settings import Settings
-from database import get_db
+from . import get_db
 
 
 async def get_user_repo(

@@ -13,12 +13,6 @@ def validate_email_no_emoji(email: str) -> str:
 
 
 def validate_phone_no_emoji(phone: str) -> str:
-    cleaned = re.sub(r"[\s\-\+\(\)]", "", phone)
-    if not cleaned.isdigit():
-        raise ValueError(
-            "Phone number must contain only digits (after removing +, -, spaces, parentheses)"
-        )
-
     if emoji.emoji_count(phone) > 0:
         raise ValueError("Phone number cannot contain emojis")
     return phone

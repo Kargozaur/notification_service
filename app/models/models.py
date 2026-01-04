@@ -59,7 +59,7 @@ class User(UUIDPKMixin, CreatedAtMixin, UpdatedAtMixin, Base):
 class NotificationPreferance(
     UUIDPKMixin, OwnedByMixin, NotificationPreferanceMixin, Base
 ):
-    preferred_channed: Mapped[str] = mapped_column(String(30))
+    preferred_channel: Mapped[str] = mapped_column(String(30))
     quiet_hours_start: Mapped[time] = mapped_column(
         TIME(timezone=True), default=time(hour=23, minute=0, second=0)
     )

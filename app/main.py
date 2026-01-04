@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from core.errors import DomainError
 from lifespan import lifespan
-from router import user_router
+from router import user_router, notification_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,6 +40,7 @@ async def base_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(user_router.router)
+app.include_router(notification_router.router)
 
 
 @app.get("/")

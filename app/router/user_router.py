@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Response
+from . import APIRouter, Depends, status, Response
 from dependancies.user_dependancy import get_user_service
 from schemas.schemas import CreateUser, LoginUser
 
