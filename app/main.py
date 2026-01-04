@@ -1,6 +1,5 @@
 import time
 from typing import Callable
-from redis import Redis
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -52,10 +51,6 @@ async def log_request(request: Request, call_next: Callable):
 
 app.include_router(user_router.router)
 app.include_router(notification_router.router)
-
-
-def get_redis(request: Request) -> Redis:
-    return request.app.state.redis
 
 
 @app.get("/")
