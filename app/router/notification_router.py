@@ -1,4 +1,4 @@
-from . import Depends, APIRouter, NotificationService
+from . import Depends, APIRouter, NotificationService, Body
 from dependancies.notification_dependancy import (
     get_notification_service,
 )
@@ -25,12 +25,17 @@ async def get_preferance(
 
 @router.patch("/", response_model=NotificationPreferanceRead)
 async def update_preferance(
-    new_data: UpdateNotificationPref,
+    new_data: UpdateNotificationPref = Body(default=None),
     notification_service: NotificationService = Depends(
         get_notification_service
     ),
     current_user=Depends(get_current_user),
 ):
+    if not new_data:
+        return await notification_service.create_or_get_preferance(
+            current_user.id
+        )
+
     return await notification_service.update_preferance(
         current_user.id, new_data
     )
