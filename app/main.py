@@ -1,17 +1,15 @@
-import logging
+import time
+from typing import Callable
+from redis import Redis
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from core.errors import DomainError
 from lifespan import lifespan
 from router import user_router, notification_router
+import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger("app")
+logger = logging.getLogger(__name__)
 
 app = FastAPI(lifespan=lifespan)
 
@@ -39,12 +37,29 @@ async def base_exception_handler(request: Request, exc: Exception):
     )
 
 
+@app.middleware("http")
+async def log_request(request: Request, call_next: Callable):
+    start = time.time()
+    response = await call_next(request)
+    duration = time.time() - start
+    duration_ms = duration * 1000
+    logger.info(
+        f"{request.method} {request.url.path} "
+        f"-> {response.status_code} ({duration_ms:.1f}ms)"
+    )
+    return response
+
+
 app.include_router(user_router.router)
 app.include_router(notification_router.router)
 
 
+def get_redis(request: Request) -> Redis:
+    return request.app.state.redis
+
+
 @app.get("/")
-def main():
+async def main():
     return {"Hello": "World"}
 
 

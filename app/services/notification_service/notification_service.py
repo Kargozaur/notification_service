@@ -1,3 +1,4 @@
+from redis.asyncio import Redis
 import uuid
 from . import INotificationRepo
 from . import (
@@ -7,6 +8,9 @@ from . import (
     NotificationsEnum,
 )
 from core.errors import PreferanceDoesNotExists
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationService:
@@ -15,15 +19,46 @@ class NotificationService:
     update_preferance(user_id, user_data)
     """
 
-    def __init__(self, notification_pref: INotificationRepo) -> None:
+    def __init__(
+        self, notification_pref: INotificationRepo, redis: Redis
+    ) -> None:
         self.notification_preferance = notification_pref
+        self.redis = redis
+
+    async def _get_from_cached_helper(
+        self, user_id: uuid.UUID
+    ) -> NotificationPreferanceRead | None:
+        """Helper method to extract data from cache if exists. Returns None if nothing found"""
+        cached_key = f"notificaion:prefs:{user_id.hex}"
+        try:
+            cached = await self.redis.get(cached_key)
+            if cached:
+                return NotificationPreferanceRead.model_validate_json(
+                    cached
+                )
+        except Exception as e:
+            logger.warning(f"Redis unavailable {e}", exc_info=True)
+        return None
+
+    async def _invalidate_cache(self, user_id: uuid.UUID) -> None:
+        cache_key = f"notification:prefs:{user_id.hex}"
+        try:
+            await self.redis.delete(cache_key)
+            logger.debug(f"Cache invalidated for user {user_id}")
+        except Exception as exc:
+            logger.warning("Cache invalidation failed", exc_info=exc)
 
     async def create_or_get_preferance(
         self, user_id: uuid.UUID
     ) -> NotificationPreferanceRead:
-        """Tries to get preferance, if none found raises exception and proceeds to creation of a new one."""
+        """Tries to get preferance from cache, if not found, performs lookup in db.
+        If none found - raises exception and proceeds to creation of a new preferance."""
+
+        search_cache = await self._get_from_cached_helper(user_id)
+        if search_cache is not None:
+            return search_cache
         try:
-            return await self.notification_preferance.get_preferance(
+            pref = await self.notification_preferance.get_preferance(
                 user_id
             )
         except PreferanceDoesNotExists:
@@ -32,30 +67,36 @@ class NotificationService:
                 channel_specific_settings={},
                 email_enabled=True,
                 push_enabled=True,
-                telegram_enabled=True,
+                telegram_enabled=False,
             )
-            return (
+            pref = (
                 await self.notification_preferance.create_preferance(
                     user_id, default_data
                 )
             )
+        read_model = NotificationPreferanceRead.model_validate(pref)
+        cached_key = f"notification:prefs{user_id}"
+        try:
+            await self.redis.set(
+                cached_key, read_model.model_dump_json(), ex=600
+            )
+        except Exception as exc:
+            logger.warning("Failed to cache preferance", exc_info=exc)
+        return read_model
 
     async def update_preferance(
         self, user_id: uuid.UUID, user_data: UpdateNotificationPref
     ) -> NotificationPreferanceRead:
-        """if no data to update provided, tries to return existing data"""
+        """Tries to update data. If nothing to update tries to look up in cache.
+        If nothing found in cache, looksup in DB.
+        If user got no preferances, creates new for them."""
         to_update = user_data.model_dump(exclude_unset=True)
         if not to_update:
-            try:
-                current = (
-                    await self.notification_preferance.get_preferance(
-                        user_id
-                    )
-                )
-                return current
-            except PreferanceDoesNotExists:
-                raise PreferanceDoesNotExists
+            current = await self.create_or_get_preferance(user_id)
+            return current
+
         result = await self.notification_preferance.update_preferance(
             user_id, to_update
         )
+        await self._invalidate_cache(user_id)
         return result

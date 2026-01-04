@@ -5,3 +5,5 @@ from services.user.user_repo import UserRepository
 from services.user.user_service import UserService
 from utility.password_hasher import PasswordHasher
 from database import get_db
+from redis.asyncio import Redis
+from typing import Annotated
