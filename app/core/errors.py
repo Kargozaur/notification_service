@@ -28,3 +28,15 @@ class PreferanceDoesNotExists(DomainError):
         "Preferances for this user doesn't exist, please create them"
     )
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class ChannelDisabledError(DomainError):
+    message: str = (
+        "Please enable this channel before sending anything to it"
+    )
+    status_code = status.HTTP_409_CONFLICT
+
+
+class QuietHoursError(DomainError):
+    message: str = "User has quiet hours now"
+    status_code = status.HTTP_425_TOO_EARLY

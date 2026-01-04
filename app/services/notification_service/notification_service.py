@@ -1,5 +1,5 @@
 from redis.asyncio import Redis
-from . import UUID
+from . import UUID, timezone, datetime, time
 from . import INotificationRepo
 from . import (
     NotificationPreferanceCreate,
@@ -7,7 +7,11 @@ from . import (
     UpdateNotificationPref,
     NotificationsEnum,
 )
-from core.errors import PreferanceDoesNotExists, ChannelDisabledError
+from core.errors import (
+    PreferanceDoesNotExists,
+    ChannelDisabledError,
+    QuietHoursError,
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,11 +52,22 @@ class NotificationService:
         except Exception as exc:
             logger.warning("Cache invalidation failed", exc_info=exc)
 
+    async def _validate_time(self, start: time, end: time) -> bool:
+        now = (
+            datetime.now(tz=timezone.utc)
+            .time()
+            .replace(tzinfo=timezone.utc)
+        )
+        is_quiet: bool = (start <= end and start <= now <= end) or (
+            start > end and (now >= start or now <= end)
+        )
+        return is_quiet
+
     async def create_or_get_preferance(
         self, user_id: UUID
     ) -> NotificationPreferanceRead:
         """Tries to get preferance from cache, if not found, performs lookup in db.
-        If none found - raises exception and proceeds to creation of a new preferance."""
+        If nothing is found, an exception occures and a new preferance created."""
 
         search_cache = await self._get_from_cached_helper(user_id)
         if search_cache is not None:
@@ -111,6 +126,16 @@ class NotificationService:
         pref: NotificationPreferanceRead = (
             await self.create_or_get_preferance(user_id)
         )
+        """If the user is currently in quiet time, the attempt to
+            to send a notification is aborted.
+        """
+        is_quiet: bool = await self._validate_time(
+            pref.quiet_hours_start, pref.quiet_hours_end
+        )
+
+        if is_quiet is True:
+            raise QuietHoursError
+
         """Resolver for channel. If channel is None, set default from preferred channel"""
         channel_to_use: str = channel or pref.preferred_channel.value
         """Checks if channel is enabled. Raises if not"""

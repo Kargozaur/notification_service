@@ -113,6 +113,12 @@ class NotificationPreferanceRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CreateNotification(BaseModel):
+    title: str
+    body: str
+    channel: str | None = None
+
+
 class TokenPayload(BaseModel):
     sub: uuid.UUID | None = None
     exp: int | None = None

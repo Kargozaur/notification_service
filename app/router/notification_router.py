@@ -5,6 +5,7 @@ from dependancies.notification_dependancy import (
 from schemas.schemas import (
     NotificationPreferanceRead,
     UpdateNotificationPref,
+    CreateNotification,
 )
 from oauth.oauth import get_current_user
 
@@ -39,6 +40,23 @@ async def update_preferance(
     return await notification_service.update_preferance(
         current_user.id, new_data
     )
+
+
+@router.post("/notify")
+async def send_notification(
+    payload: CreateNotification,
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
+    current_user=Depends(get_current_user),
+):
+    result = await notification_service.notify(
+        current_user.id,
+        payload.title,
+        payload.body,
+        payload.channel,
+    )
+    return result
 
 
 # @router.post("/", response_model=NotificationPreferanceRead)
