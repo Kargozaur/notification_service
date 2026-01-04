@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_PASSWORD: ${db_password?Set password!}
       POSTGRES_USER: ${db_user?Set username!}
-      POSTGRES_DB: ${db_name}
+      POSTGRES_DB: ${db_name?Set db name!}
     restart: unless-stopped
     ports:
       - "5433:5432"
