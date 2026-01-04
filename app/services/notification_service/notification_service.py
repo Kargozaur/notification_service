@@ -160,6 +160,8 @@ class NotificationService:
         if enabled is False:
             raise ChannelDisabledError
 
+        """Deciding which strategy to use. 
+        If strategy not found, raises an error"""
         strategy = self.strategies.get(channel_to_use)
         if not strategy:
             raise NotificationTypeNotSupported
