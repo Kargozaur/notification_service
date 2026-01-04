@@ -1,16 +1,19 @@
 from redis.asyncio import Redis
 from . import UUID, timezone, datetime, time
-from . import INotificationRepo
+from . import INotificationRepo, NotificationSender
 from . import (
     NotificationPreferanceCreate,
     NotificationPreferanceRead,
     UpdateNotificationPref,
     NotificationsEnum,
 )
+from . import TelegramSender, EmailSender, MobilePushSender
 from core.errors import (
     PreferanceDoesNotExists,
     ChannelDisabledError,
     QuietHoursError,
+    NotificationTypeNotSupported,
+    SendChannelError,
 )
 import logging
 
@@ -28,6 +31,11 @@ class NotificationService:
     ) -> None:
         self.notification_preferance = notification_pref
         self.redis = redis
+        self.strategies: dict[str, NotificationSender] = {
+            "email": EmailSender,
+            "push": MobilePushSender,
+            "telegram": TelegramSender,
+        }
 
     async def _get_from_cached_helper(
         self, user_id: UUID
@@ -138,19 +146,31 @@ class NotificationService:
 
         """Resolver for channel. If channel is None, set default from preferred channel"""
         channel_to_use: str = channel or pref.preferred_channel.value
+        logger.info(f"{channel_to_use}")
         """Checks if channel is enabled. Raises if not"""
         match channel_to_use:
             case "email":
                 enabled = pref.email_enabled
             case "telegram":
                 enabled = pref.telegram_enabled
-            case "web-push":
+            case "push":
                 enabled = pref.push_enabled
             case _:
                 enabled = False
-
         if enabled is False:
             raise ChannelDisabledError
+
+        strategy = self.strategies.get(channel_to_use)
+        if not strategy:
+            raise NotificationTypeNotSupported
+
+        success, error = await strategy.send(
+            user_id=user_id, title=title, body=body
+        )
+
+        if not success:
+            logging.error(f"failed to send via {channel}: {error}")
+            raise SendChannelError
 
         logging.info(
             f"Notification queued for user{user_id} via {channel_to_use}: title={title}"

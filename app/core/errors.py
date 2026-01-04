@@ -40,3 +40,13 @@ class ChannelDisabledError(DomainError):
 class QuietHoursError(DomainError):
     message: str = "User has quiet hours now"
     status_code = status.HTTP_425_TOO_EARLY
+
+
+class NotificationTypeNotSupported(DomainError):
+    message: str = "This channel currently not supported"
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class SendChannelError(DomainError):
+    message: str = "Failed to send with channel"
+    status_code = status.HTTP_403_FORBIDDEN

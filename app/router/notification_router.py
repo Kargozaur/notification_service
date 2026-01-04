@@ -51,10 +51,7 @@ async def send_notification(
     current_user=Depends(get_current_user),
 ):
     result = await notification_service.notify(
-        current_user.id,
-        payload.title,
-        payload.body,
-        payload.channel,
+        current_user.id, payload.title, payload.body, payload.channel
     )
     return result
 
