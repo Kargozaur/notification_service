@@ -1,10 +1,13 @@
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 import time
 from typing import Callable
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from core.errors import DomainError
-from lifespan import lifespan
+from lifespan import lifespan, limiter
 from router import user_router, notification_router
 import logging
 
@@ -49,6 +52,12 @@ async def log_request(request: Request, call_next: Callable):
     return response
 
 
+app.state.limiter = limiter
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler,  # ty:ignore[invalid-argument-type]
+)
+app.add_middleware(SlowAPIMiddleware)  # ty:ignore[invalid-argument-type]
 app.include_router(user_router.router)
 app.include_router(notification_router.router)
 

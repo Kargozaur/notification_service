@@ -1,4 +1,4 @@
-from . import Depends, APIRouter, NotificationService, Body
+from . import Depends, APIRouter, NotificationService, Body, Request
 from dependancies.notification_dependancy import (
     get_notification_service,
 )
@@ -8,12 +8,16 @@ from schemas.schemas import (
     CreateNotification,
 )
 from oauth.oauth import get_current_user
+from lifespan import limiter
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
 @router.get("/", response_model=NotificationPreferanceRead)
+@limiter.limit("40/hour")
+@limiter.limit("5/minute")
 async def get_preferance(
+    request: Request,
     notification_service: NotificationService = Depends(
         get_notification_service
     ),
@@ -26,6 +30,7 @@ async def get_preferance(
 
 @router.patch("/", response_model=NotificationPreferanceRead)
 async def update_preferance(
+    request: Request,
     new_data: UpdateNotificationPref = Body(default=None),
     notification_service: NotificationService = Depends(
         get_notification_service
@@ -43,8 +48,10 @@ async def update_preferance(
 
 
 @router.post("/notify")
+@limiter.limit("10/hour")
 async def send_notification(
-    payload: CreateNotification,
+    request: Request,
+    payload: CreateNotification = Body(default=None),
     notification_service: NotificationService = Depends(
         get_notification_service
     ),
