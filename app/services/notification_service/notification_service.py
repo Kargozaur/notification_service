@@ -1,18 +1,16 @@
 from redis.asyncio import Redis
 from . import UUID, timezone, datetime, time
-from . import INotificationRepo, NotificationSender
+from . import INotificationRepo
 from . import (
     NotificationPreferanceCreate,
     NotificationPreferanceRead,
     UpdateNotificationPref,
     NotificationsEnum,
 )
-from . import TelegramSender, EmailSender, MobilePushSender
 from core.errors import (
     PreferanceDoesNotExists,
     ChannelDisabledError,
     QuietHoursError,
-    NotificationTypeNotSupported,
 )
 import logging
 from tasks.notification import send_notification
@@ -31,11 +29,6 @@ class NotificationService:
     ) -> None:
         self.notification_preferance = notification_pref
         self.redis = redis
-        self.strategies: dict[str, NotificationSender] = {
-            "email": EmailSender,
-            "push": MobilePushSender,
-            "telegram": TelegramSender,
-        }
 
     async def _get_from_cached_helper(
         self, user_id: UUID
@@ -70,14 +63,6 @@ class NotificationService:
             start > end and (now >= start or now <= end)
         )
         return is_quiet
-
-    async def get_channel(
-        self, channel: str
-    ) -> NotificationSender | None:
-        sender = self.strategies.get("channel")
-        if sender is None:
-            NotificationTypeNotSupported
-        return sender
 
     async def create_or_get_preferance(
         self, user_id: UUID

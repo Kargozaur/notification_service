@@ -6,13 +6,21 @@ from services.notification_service.notification_strategies import (
 
 from celery import shared_task
 from core.errors import SendChannelError
-from asgiref.sync import async_to_sync
+import logging
 
-SENDER_MAP = {
-    "email": EmailSender(),
-    "push": MobilePushSender(),
-    "telegram": TelegramSender(),
-}
+logger = logging.getLogger(__name__)
+
+
+def get_class(channel):
+    SENDER_MAP = {
+        "email": EmailSender,
+        "push": MobilePushSender,
+        "telegram": TelegramSender,
+    }
+    cls = SENDER_MAP.get(channel)
+    if cls is None:
+        raise SendChannelError
+    return cls()
 
 
 @shared_task(
@@ -20,15 +28,11 @@ SENDER_MAP = {
     name="send_notification",
 )
 def send_notification(self, user_id, title, body, channel):
-    strategy = (
-        SENDER_MAP.get(channel) if channel in SENDER_MAP else None
-    )
+    strategy = get_class(channel)
     if strategy is None:
         raise SendChannelError
     try:
-        success, error = async_to_sync(strategy.send)(
-            user_id, title, body
-        )  # ty:ignore[not-iterable]
+        success, error = strategy.send(user_id, title, body)  # ty:ignore[not-iterable]
     except Exception:
         raise
     if success:

@@ -3,7 +3,7 @@ from . import UUID
 
 class TelegramSender:
     @staticmethod
-    async def send(
+    def send(
         user_id: UUID, title: str, body: str
     ) -> tuple[bool, str | None]:
         print(f"Sending for {user_id} with Telegram")
@@ -15,7 +15,7 @@ class TelegramSender:
 
 class EmailSender:
     @staticmethod
-    async def send(
+    def send(
         user_id: UUID, title: str, body: str
     ) -> tuple[bool, str | None]:
         print(f"Sending for {user_id} with Email")
@@ -27,7 +27,7 @@ class EmailSender:
 
 class MobilePushSender:
     @staticmethod
-    async def send(
+    def send(
         user_id: UUID, title: str, body: str
     ) -> tuple[bool, str | None]:
         print(f"Sending for {user_id} with Push")
