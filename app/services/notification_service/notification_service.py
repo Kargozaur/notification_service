@@ -41,7 +41,7 @@ class NotificationService:
         self, user_id: UUID
     ) -> NotificationPreferanceRead | None:
         """Helper method to extract data from cache if exists. Returns None if nothing found"""
-        cached_key = f"notificaion:prefs:{user_id.hex}"
+        cached_key = f"notification:prefs:{user_id.hex}"
         try:
             cached = await self.redis.get(cached_key)
             if cached:
