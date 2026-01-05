@@ -13,9 +13,9 @@ from core.errors import (
     ChannelDisabledError,
     QuietHoursError,
     NotificationTypeNotSupported,
-    SendChannelError,
 )
 import logging
+from tasks.notification import send_notification
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,14 @@ class NotificationService:
             start > end and (now >= start or now <= end)
         )
         return is_quiet
+
+    async def get_channel(
+        self, channel: str
+    ) -> NotificationSender | None:
+        sender = self.strategies.get("channel")
+        if sender is None:
+            NotificationTypeNotSupported
+        return sender
 
     async def create_or_get_preferance(
         self, user_id: UUID
@@ -160,19 +168,7 @@ class NotificationService:
         if enabled is False:
             raise ChannelDisabledError
 
-        """Deciding which strategy to use. 
-        If strategy not found, raises an error"""
-        strategy = self.strategies.get(channel_to_use)
-        if not strategy:
-            raise NotificationTypeNotSupported
-
-        success, error = await strategy.send(
-            user_id=user_id, title=title, body=body
-        )
-
-        if not success:
-            logging.error(f"failed to send via {channel}: {error}")
-            raise SendChannelError
+        send_notification.delay(user_id, title, body, channel_to_use)
 
         logging.info(
             f"Notification queued for user{user_id} via {channel_to_use}: title={title}"

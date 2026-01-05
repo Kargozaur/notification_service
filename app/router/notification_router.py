@@ -50,8 +50,8 @@ async def update_preferance(
 
 
 @router.post("/notify")
-@limiter.limit("10/hour")
-@limiter.limit("3/minute")
+@limiter.limit("100/hour")
+@limiter.limit("10/minute")
 async def send_notification(
     request: Request,
     payload: CreateNotification = Body(default=None),
