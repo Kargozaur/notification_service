@@ -29,6 +29,8 @@ async def get_preferance(
 
 
 @router.patch("/", response_model=NotificationPreferanceRead)
+@limiter.limit("20/hour")
+@limiter.limit("5/minute")
 async def update_preferance(
     request: Request,
     new_data: UpdateNotificationPref = Body(default=None),
@@ -49,6 +51,7 @@ async def update_preferance(
 
 @router.post("/notify")
 @limiter.limit("10/hour")
+@limiter.limit("3/minute")
 async def send_notification(
     request: Request,
     payload: CreateNotification = Body(default=None),

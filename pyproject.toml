@@ -15,5 +15,6 @@ dependencies = [
     "phonenumbers>=9.0.21",
     "python-jose>=3.5.0",
     "redis[async,asyncio]>=7.1.0",
+    "slowapi>=0.1.9",
     "sqlalchemy[asyncio]>=2.0.45",
 ]
