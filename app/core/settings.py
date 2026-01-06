@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     ALGORITHM: str
     REDIS_URL: str
     RABBIT_MQ: str
+    TELEGRAM_TOKEN: str
+    """Currently hardcoded, in future it wont be used"""
+    TELEGRAM_CHANNEL: int
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

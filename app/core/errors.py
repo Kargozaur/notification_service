@@ -50,3 +50,8 @@ class NotificationTypeNotSupported(DomainError):
 class SendChannelError(DomainError):
     message: str = "Failed to send with this channel"
     status_code = status.HTTP_403_FORBIDDEN
+
+
+class SendFailedError(DomainError):
+    message: str = "Failed to deliever message to this channel"
+    status_code = status.HTTP_400_BAD_REQUEST

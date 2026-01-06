@@ -1,18 +1,6 @@
 from . import UUID
 
 
-class TelegramSender:
-    @staticmethod
-    def send(
-        user_id: UUID, title: str, body: str
-    ) -> tuple[bool, str | None]:
-        print(f"Sending for {user_id} with Telegram")
-        print(f"       Title: {title}")
-        print(f"       Body:{body}")
-        print("     -> Success")
-        return True, None
-
-
 class EmailSender:
     @staticmethod
     def send(
