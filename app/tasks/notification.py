@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_class(channel):
+def get_strategy(channel):
     SENDER_MAP = {
         "email": EmailSender,
         "push": MobilePushSender,
@@ -28,7 +28,7 @@ def get_class(channel):
     name="send_notification",
 )
 def send_notification(self, user_id, title, body, channel):
-    strategy = get_class(channel)
+    strategy = get_strategy(channel)
     if strategy is None:
         raise SendChannelError
     try:

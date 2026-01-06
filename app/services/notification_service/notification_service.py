@@ -30,7 +30,7 @@ class NotificationService:
         self.notification_preferance = notification_pref
         self.redis = redis
 
-    async def _get_from_cached_helper(
+    async def _get_preferance_from_cache(
         self, user_id: UUID
     ) -> NotificationPreferanceRead | None:
         """Helper method to extract data from cache if exists. Returns None if nothing found"""
@@ -70,7 +70,7 @@ class NotificationService:
         """Tries to get preferance from cache, if not found, performs lookup in db.
         If nothing is found, an exception occures and a new preferance created."""
 
-        search_cache = await self._get_from_cached_helper(user_id)
+        search_cache = await self._get_preferance_from_cache(user_id)
         if search_cache is not None:
             return search_cache
         try:

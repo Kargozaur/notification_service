@@ -18,7 +18,7 @@ class UUIDPKMixin:
     """Generic class for the tables with UUID as pk"""
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        UUID(as_uuid=True),  # ty:ignore[no-matching-overload]
         primary_key=True,
         default=uuid.uuid4,
         nullable=False,
@@ -31,7 +31,7 @@ class OwnedByMixin:
     @declared_attr
     def user_id(cls) -> Mapped[uuid.UUID | None]:
         return mapped_column(
-            UUID(as_uuid=True),
+            UUID(as_uuid=True),  # ty:ignore[no-matching-overload]
             ForeignKey("users.id", ondelete="CASCADE"),
             nullable=True,
             index=True,

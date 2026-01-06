@@ -19,7 +19,7 @@ class NotificationRepo(INotificationRepo):
             NotificationPreferance.user_id == user_id
         )
 
-    async def _get_current_or_raise(
+    async def _get_user_preferance_or_raise(
         self, user_id
     ) -> NotificationPreferance:
         """ ""Helper function to get preferance of the user.
@@ -41,7 +41,9 @@ class NotificationRepo(INotificationRepo):
         Returns if exists, else raises exception and proceeds to creation
         """
         try:
-            exists_pref = await self._get_current_or_raise(user_id)
+            exists_pref = await self._get_user_preferance_or_raise(
+                user_id
+            )
 
             return NotificationPreferanceRead.model_validate(
                 exists_pref
@@ -63,7 +65,7 @@ class NotificationRepo(INotificationRepo):
         self, user_id: UUID
     ) -> NotificationPreferanceRead:
         """Tries to get user preferance. Raises if not found"""
-        result = await self._get_current_or_raise(user_id)
+        result = await self._get_user_preferance_or_raise(user_id)
         return NotificationPreferanceRead.model_validate(result)
 
     async def update_preferance(
@@ -74,9 +76,11 @@ class NotificationRepo(INotificationRepo):
         Returns new record if everything is ok.
         """
         if not updated_pref:
-            current = await self._get_current_or_raise(user_id)
+            current = await self._get_user_preferance_or_raise(
+                user_id
+            )
             return NotificationPreferanceRead.model_validate(current)
-        await self._get_current_or_raise(user_id)
+        await self._get_user_preferance_or_raise(user_id)
         update_st = (
             update(NotificationPreferance)
             .values(**updated_pref)
