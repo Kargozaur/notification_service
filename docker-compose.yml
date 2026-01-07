@@ -2,7 +2,6 @@ version: '3.8'
 services:
   database:
     image: postgres:18.1-alpine3.22
-    pull_policy: never
     env_file:
       - .env_db
     environment:
@@ -24,7 +23,6 @@ services:
 
   redis:
     image: redis:8.4.0-alpine
-    pull_policy: never
     ports:
       - "6379:6379"
     networks:
@@ -37,7 +35,6 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2.2-management-alpine
-    pull_policy: never
     hostname: rabbitmq
     depends_on:
       - database
