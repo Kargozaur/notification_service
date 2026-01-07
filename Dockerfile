@@ -27,7 +27,7 @@ COPY --from=builder --chown=user:user . /app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-USER nonroot
+USER user
 EXPOSE 7000
 
 CMD [ "uv", "run", "main.py" ]
