@@ -4,11 +4,12 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.exceptions import TelegramAPIError
 from core.settings import settings
+from .. import NotificationSender
 
 logger = logging.getLogger(__name__)
 
 
-class TelegramSender:
+class TelegramSender(NotificationSender):
     def __init__(self, channel_id: str | int) -> None:
         self.channel_id = channel_id
 

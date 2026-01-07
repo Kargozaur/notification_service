@@ -1,9 +1,9 @@
-from typing import Protocol
+from abc import ABC, abstractmethod
 from . import UUID
 
 
-class NotificationSender(Protocol):
-    @staticmethod
-    def send(
-        user_id: UUID, title: str, body: str
+class NotificationSender(ABC):
+    @abstractmethod
+    async def send(
+        self, user_id: UUID, title: str, body: str
     ) -> tuple[bool, str | None]: ...
