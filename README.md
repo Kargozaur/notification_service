@@ -18,7 +18,7 @@
 git clone https://github.com/Kargozaur/notification_service
 cd notification_service
 ```
-After that, you need to create 2 .env files in the root folder(notification_service/)
+After that, you'll need to create 2 .env files in the root folder(notification_service/)
 .env_db looks like this 
 ```
 db_password=<your_password_here>
@@ -60,12 +60,11 @@ To generate openssl key, write:
 ```
 openssl rand -hex <your_length>
 ```
-**Do not generate a new key after you've added your first user in the db.**
-
 Data for the link DATABASE_URL is taken from .env_db.
 
-To create TG bot, generate token in the [BotFather](https://t.me/BotFather).
-After that, add your bot in the channel. To obrain channel id, you need ot open TG Web, open your chat and in the url copy data after #. It may look like this
+To create a TG bot, generate token in the [BotFather](https://t.me/BotFather).
+
+After that, add your bot to the group. To obrain channel id, you'll have to open TG Web, open your chat and in the url copy number after #. It may look like this
 ```
 -1234567890
 ```
@@ -79,7 +78,7 @@ That should create a new virtual enviroment. Enter in it by:
 ```
 source .venv/bin/activate
 ```
-To create tables in DB:
+To create tables in the database(docker compose should be running):
 ```
 alembic upgrade head
 ```
@@ -87,11 +86,11 @@ To start the app:
 ```
 uv run main.py
 ```
-After that, create second terminal, navigate to the app directory (cd app), activate venv if it's not activated and start celery worker
+After that, create second terminal, navigate to the app directory (cd app), activate venv if it's not activated and start the celery worker
 ```
 celery -A tasks.app worker --pool=solo --loglevel=info
 ```
-I would recommend test it with Postman
+I'd recommend test it with Postman
 ```
 base url: localhost:7000/
 ```
@@ -114,7 +113,7 @@ To create a user you can something like this within the body request:
 }
 ```
 To login, you'll need to use email and a password. 
-I would recommend you to add this script to automatically add the JWT token:
+Add this script to automatically add JWT token in the environment:
 ```
 pm.environment.set("JWT", pm.response.json().access_token)
 ```
