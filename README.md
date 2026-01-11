@@ -84,7 +84,7 @@ alembic upgrade head
 ```
 To start the app:
 ```
-uv run main.py
+uvicorn main:app --host 0.0.0.0 --port 7000
 ```
 After that, create second terminal, navigate to the app directory (cd app), activate venv if it's not activated and start the celery worker
 ```
