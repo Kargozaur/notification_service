@@ -65,7 +65,3 @@ app.include_router(notification_router.router)
 @app.get("/")
 async def main():
     return {"Hello": "World"}
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="localhost", port=7000, reload=True)

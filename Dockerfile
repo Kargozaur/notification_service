@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim as builder
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS builder
 WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 
 ENV UV_LINK_MODE=copy
@@ -10,7 +10,7 @@ COPY pyproject.toml uv.lock* ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-dev
 COPY . .
-RUN uv sync 
+RUN uv sync --locked
 
 FROM python:3.14-slim
 
@@ -23,11 +23,11 @@ RUN groupadd --system --gid 999 user && \
 WORKDIR /app
 
 COPY --from=builder --chown=user:user /app/.venv /app/.venv
-COPY --from=builder --chown=user:user . /app
+COPY --from=builder --chown=user:user /app/app /app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
 USER user
 EXPOSE 7000
 
-CMD [ "uv", "run", "main.py" ]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7000"]
